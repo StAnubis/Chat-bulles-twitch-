@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Chat Twitch Bulles</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    font-family: "Poppins", sans-serif;
+  }
+
+  #chat {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .bubble {
+    position: absolute;
+    bottom: 0;
+    background: rgba(40, 40, 40, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 18px;
+    white-space: nowrap;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: floatUp 45s linear forwards;
+  }
+
+  .left { left: 50px; }
+  .right { right: 50px; }
+
+  @keyframes floatUp {
+    0%   { transform: translateY(0); opacity: 0; }
+    5%   { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(-100vh); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+  <div id="chat"></div>
+
+  <!-- 📡 Import de ComfyJS -->
+  <script src="https://cdn.jsdelivr.net/npm/comfy.js/dist/comfy.min.js"></script>
+
+  <script>
+    const chat = document.getElementById("chat");
+    let side = "left";
+
+    // Fonction pour ajouter une bulle
+    function addMessage(user, text) {
+      const msg = document.createElement("div");
+      msg.className = `bubble ${side}`;
+      msg.textContent = `${user}: ${text}`;
+      chat.appendChild(msg);
+
+      // alterner gauche/droite
+      side = side === "left" ? "right" : "left";
+
+      // suppression après 45s (durée animation)
+      setTimeout(() => msg.remove(), 45000);
+    }
+
+    // 🟣 Connexion à ton chat Twitch
+    // Remplace "ton_pseudo_twitch" par ton pseudo Twitch (sans @)
+    ComfyJS.Init(sat_anubis);
+
+    // Quand un message est reçu
+    ComfyJS.onChat = (user, message, flags, self, extra) => {
+      addMessage(user, message);
+    };
+
+    // (Facultatif) message de debug pour vérifier la connexion
+    console.log("🎈 Chat Twitch Bulles connecté !");
+  </script>
+</body>
+</html>
