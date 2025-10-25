@@ -78,6 +78,27 @@
   <script>
     const chat = document.getElementById("chat");
     let side = "left";
+    let globalBadges = {}; // stocke les URLs des badges Twitch globaux
+
+    // 🟣 Récupérer les badges globaux Twitch
+    async function loadGlobalBadges() {
+      try {
+        const res = await fetch("https://badges.twitch.tv/v1/badges/global/display");
+        const data = await res.json();
+        globalBadges = data.badge_sets;
+        console.log("✅ Badges Twitch chargés :", Object.keys(globalBadges));
+      } catch (err) {
+        console.error("Erreur lors du chargement des badges :", err);
+      }
+    }
+
+    // Récupérer l’URL du badge selon son nom et sa version
+    function getBadgeURL(badgeName, version) {
+      if (globalBadges[badgeName] && globalBadges[badgeName].versions[version]) {
+        return globalBadges[badgeName].versions[version].image_url_1x;
+      }
+      return null;
+    }
 
     function addMessage(user, text, extra) {
       const msg = document.createElement("div");
@@ -90,14 +111,18 @@
       const badgesContainer = document.createElement("span");
       badgesContainer.className = "badges";
 
-      // ✅ Récupération des badges à partir de extra.userBadges
-      if (extra && extra.userBadges) {
-        for (const [badgeName, badgeData] of Object.entries(extra.userBadges)) {
-          const img = document.createElement("img");
-          img.src = `https://static-cdn.jtvnw.net/badges/v1/${badgeData.setID}/${badgeData.version}/1`;
-          img.alt = badgeName;
-          badgesContainer.appendChild(img);
-        }
+      // ✅ Récupération des badges à partir de extra.badgesRaw
+      if (extra && extra.badgesRaw) {
+        extra.badgesRaw.forEach(b => {
+          const [name, version] = b.split("/");
+          const url = getBadgeURL(name, version);
+          if (url) {
+            const img = document.createElement("img");
+            img.src = url;
+            img.alt = name;
+            badgesContainer.appendChild(img);
+          }
+        });
       }
 
       // --- Pseudo coloré ---
@@ -132,4 +157,10 @@
       addMessage(user, message, extra);
     };
 
-    console.log("🎈 Chat
+    // Charger les badges au démarrage
+    loadGlobalBadges();
+
+    console.log("🎈 Chat Twitch Bulles connecté !");
+  </script>
+</body>
+</html>
