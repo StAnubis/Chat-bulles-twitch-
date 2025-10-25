@@ -59,6 +59,11 @@
     color: #f2f2f2;
   }
 
+  .message img {
+    height: 28px;
+    vertical-align: middle;
+  }
+
   .left { left: 10px; }
   .right { right: 10px; }
 
@@ -80,21 +85,20 @@
     let side = "left";
     let globalBadges = {};
 
-    // 🔹 Charger les badges globaux Twitch (mais sans bloquer le reste)
+    // Charger les badges globaux Twitch
     async function loadBadges() {
       try {
         const res = await fetch("https://badges.twitch.tv/v1/badges/global/display");
         const data = await res.json();
         globalBadges = data.badge_sets || {};
-        console.log("✅ Badges chargés :", Object.keys(globalBadges).length);
+        console.log("✅ Badges Twitch chargés");
       } catch (e) {
         console.warn("⚠️ Impossible de charger les badges :", e);
       }
     }
-    // On le lance, mais même si ça échoue, le chat fonctionnera
     loadBadges();
 
-    // Récupérer l'URL du badge
+    // Récupérer l'URL d’un badge
     function getBadgeURL(name, version) {
       try {
         if (globalBadges[name] && globalBadges[name].versions[version]) {
@@ -104,7 +108,32 @@
       return null;
     }
 
-    // Crée une bulle de message
+    // Convertir un message en HTML avec émotes
+    function parseEmotes(message, emotes) {
+      if (!emotes) return message;
+      let result = message;
+      try {
+        const emotePositions = [];
+        for (const emoteId in emotes) {
+          emotes[emoteId].forEach(pos => {
+            const [start, end] = pos.split("-").map(Number);
+            emotePositions.push({ start, end, id: emoteId });
+          });
+        }
+
+        emotePositions.sort((a, b) => b.start - a.start);
+
+        emotePositions.forEach(({ start, end, id }) => {
+          const emoteText = message.substring(start, end + 1);
+          const emoteImg = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" alt="${emoteText}">`;
+          result = result.substring(0, start) + emoteImg + result.substring(end + 1);
+        });
+      } catch (e) {
+        console.warn("Erreur parsing émotes :", e);
+      }
+      return result;
+    }
+
     function addMessage(user, text, extra) {
       try {
         const msg = document.createElement("div");
@@ -140,7 +169,9 @@
 
         const message = document.createElement("div");
         message.className = "message";
-        message.textContent = text;
+
+        // Remplacer texte par HTML avec émotes
+        message.innerHTML = parseEmotes(text, extra?.messageEmotes);
 
         msg.appendChild(userLine);
         msg.appendChild(message);
@@ -159,9 +190,6 @@
     ComfyJS.onChat = (user, message, flags, self, extra) => {
       addMessage(user, message, extra);
     };
-
-    // Petit test local (si tu veux vérifier dans le navigateur)
-    // addMessage("TestUser", "Ceci est un message de test", { userColor: "#ff5555" });
 
     console.log("🎈 Chat Twitch Bulles prêt !");
   </script>
