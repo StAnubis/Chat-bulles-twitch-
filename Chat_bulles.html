@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Chat Twitch Bulles (Final)</title>
+<title>Chat Twitch Bulles Transparent</title>
 <style>
   html, body {
     margin: 0;
@@ -25,10 +25,10 @@
   .bubble {
     position: absolute;
     bottom: 0;
-    background: rgba(40, 40, 40, 0.8);
+    background: rgba(0, 0, 0, 0); /* fond transparent */
     color: white;
     padding: 10px 15px;
-    border-radius: 20px;
+    border-radius: 25px;
     font-size: 18px;
     white-space: normal;
     word-wrap: break-word;
@@ -38,6 +38,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3); /* glow autour du texte */
   }
 
   .user-line {
@@ -48,6 +49,7 @@
 
   .username {
     font-weight: bold;
+    text-shadow: 1px 1px 3px #000; /* contour noir pour lisibilité */
   }
 
   .badges img {
@@ -57,6 +59,7 @@
 
   .message {
     color: #f2f2f2;
+    text-shadow: 1px 1px 3px #000;
   }
 
   .message img {
@@ -76,103 +79,103 @@
 </style>
 </head>
 <body>
-  <div id="chat"></div>
+<div id="chat"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/comfy.js/dist/comfy.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/comfy.js/dist/comfy.min.js"></script>
 
-  <script>
-    const chat = document.getElementById("chat");
-    let side = "left";
+<script>
+const chat = document.getElementById("chat");
+let side = "left";
 
-    // 🔹 Badges fixes (images hébergées statiquement)
-    const badgeImages = {
-      moderator:   "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-000000000000/1",
-      vip:         "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-111111111111/1",
-      subscriber:  "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-222222222222/1",
-      broadcaster: "https://static-cdn.jtvnw.net/badges/v1/557f21c8-0000-0000-0000-000000000000/1",
-      premium:     "https://static-cdn.jtvnw.net/badges/v1/6c58b4a3-0000-0000-0000-000000000000/1"
-    };
+// 🔹 Badges fixes (avec Broadcaster corrigé)
+const badgeImages = {
+  moderator:   "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-000000000000/1",
+  vip:         "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-111111111111/1",
+  subscriber:  "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-222222222222/1",
+  broadcaster: "https://static-cdn.jtvnw.net/badges/v1/7e3f91f8-1b3c-4c7f-b97e-8b0000000000/1", // badge Broadcaster corrigé
+  premium:     "https://static-cdn.jtvnw.net/badges/v1/6c58b4a3-0000-0000-0000-000000000000/1"
+};
 
-    // 🔹 Convertir texte en HTML avec émotes
-    function parseEmotes(message, emotes) {
-      if (!emotes) return message;
-      let result = message;
-      try {
-        const emotePositions = [];
-        for (const emoteId in emotes) {
-          emotes[emoteId].forEach(pos => {
-            const [start, end] = pos.split("-").map(Number);
-            emotePositions.push({ start, end, id: emoteId });
-          });
-        }
-
-        emotePositions.sort((a, b) => b.start - a.start);
-
-        emotePositions.forEach(({ start, end, id }) => {
-          const emoteText = message.substring(start, end + 1);
-          const emoteImg = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" alt="${emoteText}">`;
-          result = result.substring(0, start) + emoteImg + result.substring(end + 1);
-        });
-      } catch (e) {
-        console.warn("Erreur parsing émotes :", e);
-      }
-      return result;
+// 🔹 Parse Emotes
+function parseEmotes(message, emotes) {
+  if (!emotes) return message;
+  let result = message;
+  try {
+    const emotePositions = [];
+    for (const emoteId in emotes) {
+      emotes[emoteId].forEach(pos => {
+        const [start, end] = pos.split("-").map(Number);
+        emotePositions.push({ start, end, id: emoteId });
+      });
     }
 
-    // 🔹 Créer et afficher la bulle
-    function addMessage(user, text, extra) {
-      try {
-        const msg = document.createElement("div");
-        msg.className = `bubble ${side}`;
+    emotePositions.sort((a, b) => b.start - a.start);
 
-        const userLine = document.createElement("div");
-        userLine.className = "user-line";
+    emotePositions.forEach(({ start, end, id }) => {
+      const emoteText = message.substring(start, end + 1);
+      const emoteImg = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" alt="${emoteText}">`;
+      result = result.substring(0, start) + emoteImg + result.substring(end + 1);
+    });
+  } catch (e) {
+    console.warn("Erreur parsing émotes :", e);
+  }
+  return result;
+}
 
-        const badgesContainer = document.createElement("span");
-        badgesContainer.className = "badges";
+// 🔹 Ajouter message
+function addMessage(user, text, extra) {
+  try {
+    const msg = document.createElement("div");
+    msg.className = `bubble ${side}`;
 
-        if(extra?.badges){
-          for(const badge in extra.badges){
-            if(badgeImages[badge]){
-              const img = document.createElement("img");
-              img.src = badgeImages[badge];
-              img.alt = badge;
-              badgesContainer.appendChild(img);
-            }
-          }
+    const userLine = document.createElement("div");
+    userLine.className = "user-line";
+
+    const badgesContainer = document.createElement("span");
+    badgesContainer.className = "badges";
+
+    if(extra?.badges){
+      for(const badge in extra.badges){
+        if(badgeImages[badge]){
+          const img = document.createElement("img");
+          img.src = badgeImages[badge];
+          img.alt = badge;
+          badgesContainer.appendChild(img);
         }
-
-        const username = document.createElement("span");
-        username.className = "username";
-        username.textContent = user;
-        username.style.color = extra?.userColor || "#a970ff";
-
-        userLine.appendChild(badgesContainer);
-        userLine.appendChild(username);
-
-        const message = document.createElement("div");
-        message.className = "message";
-        message.innerHTML = parseEmotes(text, extra?.messageEmotes);
-
-        msg.appendChild(userLine);
-        msg.appendChild(message);
-        chat.appendChild(msg);
-
-        side = side === "left" ? "right" : "left";
-        setTimeout(() => msg.remove(), 45000);
-      } catch (err) {
-        console.error("Erreur d'affichage du message :", err);
       }
     }
 
-    // 🟣 Connexion à ton chat Twitch
-    ComfyJS.Init("sat_anubis");
+    const username = document.createElement("span");
+    username.className = "username";
+    username.textContent = user;
+    username.style.color = extra?.userColor || "#a970ff";
 
-    ComfyJS.onChat = (user, message, flags, self, extra) => {
-      addMessage(user, message, extra);
-    };
+    userLine.appendChild(badgesContainer);
+    userLine.appendChild(username);
 
-    console.log("🎈 Chat Twitch Bulles FINAL prêt !");
-  </script>
+    const message = document.createElement("div");
+    message.className = "message";
+    message.innerHTML = parseEmotes(text, extra?.messageEmotes);
+
+    msg.appendChild(userLine);
+    msg.appendChild(message);
+    chat.appendChild(msg);
+
+    side = side === "left" ? "right" : "left";
+    setTimeout(() => msg.remove(), 45000);
+  } catch (err) {
+    console.error("Erreur d'affichage du message :", err);
+  }
+}
+
+// 🟣 Connexion
+ComfyJS.Init("sat_anubis");
+
+ComfyJS.onChat = (user, message, flags, self, extra) => {
+  addMessage(user, message, extra);
+};
+
+console.log("🎈 Chat Twitch Bulles Transparent + Badges corrigés prêt !");
+</script>
 </body>
 </html>
