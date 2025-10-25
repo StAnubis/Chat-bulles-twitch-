@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Chat Twitch Bulles (Stable)</title>
+<title>Chat Twitch Bulles (Complet)</title>
 <style>
   html, body {
     margin: 0;
@@ -50,8 +50,18 @@
     font-weight: bold;
   }
 
+  .badges img {
+    height: 20px;
+    vertical-align: middle;
+  }
+
   .message {
     color: #f2f2f2;
+  }
+
+  .message img {
+    height: 28px;
+    vertical-align: middle;
   }
 
   .left { left: 10px; }
@@ -73,44 +83,114 @@
   <script>
     const chat = document.getElementById("chat");
     let side = "left";
+    let globalBadges = {};
 
-    // 🔹 Fonction principale d'affichage
-    function addMessage(user, text, extra) {
-      const msg = document.createElement("div");
-      msg.className = `bubble ${side}`;
+    // 🔹 Charger les badges globaux Twitch
+    async function loadBadges() {
+      try {
+        const res = await fetch("https://badges.twitch.tv/v1/badges/global/display");
+        const data = await res.json();
+        globalBadges = data.badge_sets || {};
+        console.log("✅ Badges Twitch chargés :", Object.keys(globalBadges).length);
+      } catch (e) {
+        console.warn("⚠️ Impossible de charger les badges :", e);
+      }
+    }
+    loadBadges();
 
-      // Ligne pseudo coloré
-      const userLine = document.createElement("div");
-      userLine.className = "user-line";
-
-      const username = document.createElement("span");
-      username.className = "username";
-      username.textContent = user;
-      username.style.color = extra?.userColor || "#a970ff";
-
-      userLine.appendChild(username);
-
-      // Message texte brut
-      const message = document.createElement("div");
-      message.className = "message";
-      message.textContent = text;
-
-      msg.appendChild(userLine);
-      msg.appendChild(message);
-      chat.appendChild(msg);
-
-      // Alterner gauche/droite
-      side = side === "left" ? "right" : "left";
-
-      // Suppression après 45s
-      setTimeout(() => msg.remove(), 45000);
+    // 🔹 Récupérer l’URL d’un badge
+    function getBadgeURL(name, version) {
+      try {
+        if (globalBadges[name] && globalBadges[name].versions[version]) {
+          return globalBadges[name].versions[version].image_url_1x;
+        }
+      } catch (e) {}
+      return null;
     }
 
-    // 🟣 Connexion au chat Twitch
+    // 🔹 Convertir texte en HTML avec émotes
+    function parseEmotes(message, emotes) {
+      if (!emotes) return message;
+      let result = message;
+      try {
+        const emotePositions = [];
+        for (const emoteId in emotes) {
+          emotes[emoteId].forEach(pos => {
+            const [start, end] = pos.split("-").map(Number);
+            emotePositions.push({ start, end, id: emoteId });
+          });
+        }
+
+        emotePositions.sort((a, b) => b.start - a.start);
+
+        emotePositions.forEach(({ start, end, id }) => {
+          const emoteText = message.substring(start, end + 1);
+          const emoteImg = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" alt="${emoteText}">`;
+          result = result.substring(0, start) + emoteImg + result.substring(end + 1);
+        });
+      } catch (e) {
+        console.warn("Erreur parsing émotes :", e);
+      }
+      return result;
+    }
+
+    // 🔹 Créer et afficher la bulle
+    function addMessage(user, text, extra) {
+      try {
+        const msg = document.createElement("div");
+        msg.className = `bubble ${side}`;
+
+        const userLine = document.createElement("div");
+        userLine.className = "user-line";
+
+        const badgesContainer = document.createElement("span");
+        badgesContainer.className = "badges";
+
+        // Badges (mod, vip, sub, etc.)
+        if (extra && extra.badgesRaw && Array.isArray(extra.badgesRaw)) {
+          extra.badgesRaw.forEach(b => {
+            const [name, version] = b.split("/");
+            const url = getBadgeURL(name, version);
+            if (url) {
+              const img = document.createElement("img");
+              img.src = url;
+              img.alt = name;
+              badgesContainer.appendChild(img);
+            }
+          });
+        }
+
+        const username = document.createElement("span");
+        username.className = "username";
+        username.textContent = user;
+        username.style.color = extra?.userColor || "#a970ff";
+
+        userLine.appendChild(badgesContainer);
+        userLine.appendChild(username);
+
+        const message = document.createElement("div");
+        message.className = "message";
+        message.innerHTML = parseEmotes(text, extra?.messageEmotes);
+
+        msg.appendChild(userLine);
+        msg.appendChild(message);
+        chat.appendChild(msg);
+
+        side = side === "left" ? "right" : "left";
+        setTimeout(() => msg.remove(), 45000);
+      } catch (err) {
+        console.error("Erreur d'affichage du message :", err);
+      }
+    }
+
+    // 🟣 Connexion à ton chat Twitch
     ComfyJS.Init("sat_anubis");
 
     ComfyJS.onChat = (user, message, flags, self, extra) => {
       addMessage(user, message, extra);
     };
 
-    console.log("🎈 Chat Twitch Bulles (stable) connecté !");
+    console.log("🎈 Chat Twitch Bulles (complet) prêt !");
+  </script>
+</body>
+</html>
