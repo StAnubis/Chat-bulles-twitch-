@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Chat Twitch Bulles (Complet)</title>
+<title>Chat Twitch Bulles (Complet & Fiable)</title>
 <style>
   html, body {
     margin: 0;
@@ -83,30 +83,13 @@
   <script>
     const chat = document.getElementById("chat");
     let side = "left";
-    let globalBadges = {};
 
-    // 🔹 Charger les badges globaux Twitch
-    async function loadBadges() {
-      try {
-        const res = await fetch("https://badges.twitch.tv/v1/badges/global/display");
-        const data = await res.json();
-        globalBadges = data.badge_sets || {};
-        console.log("✅ Badges Twitch chargés :", Object.keys(globalBadges).length);
-      } catch (e) {
-        console.warn("⚠️ Impossible de charger les badges :", e);
-      }
-    }
-    loadBadges();
-
-    // 🔹 Récupérer l’URL d’un badge
-    function getBadgeURL(name, version) {
-      try {
-        if (globalBadges[name] && globalBadges[name].versions[version]) {
-          return globalBadges[name].versions[version].image_url_1x;
-        }
-      } catch (e) {}
-      return null;
-    }
+    // 🔹 Badges fixes (images hébergées statiquement)
+    const badgeImages = {
+      moderator: "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-000000000000/1",
+      vip:       "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-111111111111/1",
+      subscriber:"https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-222222222222/1"
+    };
 
     // 🔹 Convertir texte en HTML avec émotes
     function parseEmotes(message, emotes) {
@@ -146,18 +129,16 @@
         const badgesContainer = document.createElement("span");
         badgesContainer.className = "badges";
 
-        // Badges (mod, vip, sub, etc.)
-        if (extra && extra.badgesRaw && Array.isArray(extra.badgesRaw)) {
-          extra.badgesRaw.forEach(b => {
-            const [name, version] = b.split("/");
-            const url = getBadgeURL(name, version);
-            if (url) {
+        // Badges connus (mod, vip, sub)
+        if(extra?.badges){
+          for(const badge in extra.badges){
+            if(badgeImages[badge]){
               const img = document.createElement("img");
-              img.src = url;
-              img.alt = name;
+              img.src = badgeImages[badge];
+              img.alt = badge;
               badgesContainer.appendChild(img);
             }
-          });
+          }
         }
 
         const username = document.createElement("span");
@@ -190,7 +171,7 @@
       addMessage(user, message, extra);
     };
 
-    console.log("🎈 Chat Twitch Bulles (complet) prêt !");
+    console.log("🎈 Chat Twitch Bulles (complet & fiable) prêt !");
   </script>
 </body>
 </html>
