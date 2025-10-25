@@ -2,12 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Chat Twitch Bulles avec Background</title>
+<title>Chat Twitch Bulles avec Background et Ombre</title>
 <style>
   html, body {
     margin: 0;
     padding: 0;
-    background: transparent; /* transparent pour l'overlay */
+    background: transparent;
     overflow: hidden;
     height: 100vh;
     width: 100vw;
@@ -25,7 +25,7 @@
   .bubble {
     position: absolute;
     bottom: 0;
-    background: rgba(40, 40, 40, 0.8); /* fond gris translucide visible */
+    background: rgba(40, 40, 40, 0.8); /* fond gris translucide */
     color: white;
     padding: 10px 15px;
     border-radius: 25px;
@@ -33,11 +33,15 @@
     white-space: normal;
     word-wrap: break-word;
     max-width: 550px;
-    overflow: visible; /* important pour que le fond soit visible */
+    overflow: visible;
     animation: floatUp 45s linear forwards;
     display: flex;
     flex-direction: column;
     gap: 5px;
+
+    /* Contour et ombre pour mieux ressortir */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   }
 
   .user-line {
@@ -48,7 +52,7 @@
 
   .username {
     font-weight: bold;
-    text-shadow: 1px 1px 3px #000; /* contour noir */
+    text-shadow: 1px 1px 3px #000;
   }
 
   .badges img {
@@ -86,7 +90,6 @@
 const chat = document.getElementById("chat");
 let side = "left";
 
-// Badges fixes
 const badgeImages = {
   moderator:  "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-000000000000/1",
   vip:        "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-111111111111/1",
@@ -94,7 +97,6 @@ const badgeImages = {
   premium:    "https://static-cdn.jtvnw.net/badges/v1/6c58b4a3-0000-0000-0000-000000000000/1"
 };
 
-// Parse Emotes
 function parseEmotes(message, emotes) {
   if (!emotes) return message;
   let result = message;
@@ -118,7 +120,6 @@ function parseEmotes(message, emotes) {
   return result;
 }
 
-// Ajouter message
 function addMessage(user, text, extra) {
   try {
     const msg = document.createElement("div");
@@ -169,14 +170,13 @@ function addMessage(user, text, extra) {
   }
 }
 
-// Connexion
 ComfyJS.Init("sat_anubis");
 
 ComfyJS.onChat = (user, message, flags, self, extra) => {
   addMessage(user, message, extra);
 };
 
-console.log("🎈 Chat Twitch Bulles avec fond gris translucide prêt !");
+console.log("🎈 Chat Twitch Bulles avec fond, ombre et badges prêt !");
 </script>
 </body>
 </html>
