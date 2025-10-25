@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Chat Twitch Bulles Transparent</title>
+<title>Chat Twitch Bulles Transparent + Badges</title>
 <style>
   html, body {
     margin: 0;
@@ -49,7 +49,7 @@
 
   .username {
     font-weight: bold;
-    text-shadow: 1px 1px 3px #000; /* contour noir pour lisibilité */
+    text-shadow: 1px 1px 3px #000; /* contour noir */
   }
 
   .badges img {
@@ -87,16 +87,15 @@
 const chat = document.getElementById("chat");
 let side = "left";
 
-// 🔹 Badges fixes (avec Broadcaster corrigé)
+// Badges fixes
 const badgeImages = {
-  moderator:   "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-000000000000/1",
-  vip:         "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-111111111111/1",
-  subscriber:  "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-222222222222/1",
-  broadcaster: "https://static-cdn.jtvnw.net/badges/v1/7e3f91f8-1b3c-4c7f-b97e-8b0000000000/1", // badge Broadcaster corrigé
-  premium:     "https://static-cdn.jtvnw.net/badges/v1/6c58b4a3-0000-0000-0000-000000000000/1"
+  moderator:  "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-000000000000/1",
+  vip:        "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-111111111111/1",
+  subscriber: "https://static-cdn.jtvnw.net/badges/v1/1b6db88f-58a4-4b7e-abc1-222222222222/1",
+  premium:    "https://static-cdn.jtvnw.net/badges/v1/6c58b4a3-0000-0000-0000-000000000000/1"
 };
 
-// 🔹 Parse Emotes
+// Parse Emotes
 function parseEmotes(message, emotes) {
   if (!emotes) return message;
   let result = message;
@@ -108,9 +107,7 @@ function parseEmotes(message, emotes) {
         emotePositions.push({ start, end, id: emoteId });
       });
     }
-
     emotePositions.sort((a, b) => b.start - a.start);
-
     emotePositions.forEach(({ start, end, id }) => {
       const emoteText = message.substring(start, end + 1);
       const emoteImg = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" alt="${emoteText}">`;
@@ -122,7 +119,7 @@ function parseEmotes(message, emotes) {
   return result;
 }
 
-// 🔹 Ajouter message
+// Ajouter message
 function addMessage(user, text, extra) {
   try {
     const msg = document.createElement("div");
@@ -136,7 +133,12 @@ function addMessage(user, text, extra) {
 
     if(extra?.badges){
       for(const badge in extra.badges){
-        if(badgeImages[badge]){
+        if(badge === "broadcaster"){
+          const img = document.createElement("img");
+          img.src = "https://static-cdn.jtvnw.net/badges/v1/1c60f6d3-0000-0000-0000-000000000000/1"; // Broadcaster
+          img.alt = "broadcaster";
+          badgesContainer.appendChild(img);
+        } else if(badgeImages[badge]){
           const img = document.createElement("img");
           img.src = badgeImages[badge];
           img.alt = badge;
@@ -168,14 +170,14 @@ function addMessage(user, text, extra) {
   }
 }
 
-// 🟣 Connexion
+// Connexion
 ComfyJS.Init("sat_anubis");
 
 ComfyJS.onChat = (user, message, flags, self, extra) => {
   addMessage(user, message, extra);
 };
 
-console.log("🎈 Chat Twitch Bulles Transparent + Badges corrigés prêt !");
+console.log("🎈 Chat Twitch Bulles Transparent + Badges (Broadcaster inclus) prêt !");
 </script>
 </body>
 </html>
