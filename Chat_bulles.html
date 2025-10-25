@@ -78,85 +78,92 @@
   <script>
     const chat = document.getElementById("chat");
     let side = "left";
-    let globalBadges = {}; // Contiendra les URLs des badges
+    let globalBadges = {};
 
-    // 🔹 Charger les badges globaux (sans bloquer le chat)
+    // 🔹 Charger les badges globaux Twitch (mais sans bloquer le reste)
     async function loadBadges() {
       try {
         const res = await fetch("https://badges.twitch.tv/v1/badges/global/display");
         const data = await res.json();
         globalBadges = data.badge_sets || {};
-        console.log("✅ Badges Twitch chargés :", Object.keys(globalBadges).length);
+        console.log("✅ Badges chargés :", Object.keys(globalBadges).length);
       } catch (e) {
-        console.warn("⚠️ Impossible de charger les badges Twitch :", e);
-        globalBadges = {}; // éviter les erreurs si non chargé
+        console.warn("⚠️ Impossible de charger les badges :", e);
       }
     }
-    loadBadges(); // on lance le chargement dès le début, mais on n'attend pas
+    // On le lance, mais même si ça échoue, le chat fonctionnera
+    loadBadges();
 
-    // 🔹 Trouver l’image d’un badge à partir du nom/version
+    // Récupérer l'URL du badge
     function getBadgeURL(name, version) {
-      if (globalBadges[name] && globalBadges[name].versions[version]) {
-        return globalBadges[name].versions[version].image_url_1x;
-      }
+      try {
+        if (globalBadges[name] && globalBadges[name].versions[version]) {
+          return globalBadges[name].versions[version].image_url_1x;
+        }
+      } catch (e) {}
       return null;
     }
 
-    // 🔹 Créer une bulle de message
+    // Crée une bulle de message
     function addMessage(user, text, extra) {
-      const msg = document.createElement("div");
-      msg.className = `bubble ${side}`;
+      try {
+        const msg = document.createElement("div");
+        msg.className = `bubble ${side}`;
 
-      const userLine = document.createElement("div");
-      userLine.className = "user-line";
+        const userLine = document.createElement("div");
+        userLine.className = "user-line";
 
-      const badgesContainer = document.createElement("span");
-      badgesContainer.className = "badges";
+        const badgesContainer = document.createElement("span");
+        badgesContainer.className = "badges";
 
-      // Ajout des badges si disponibles
-      if (extra && extra.badgesRaw) {
-        extra.badgesRaw.forEach(b => {
-          const [name, version] = b.split("/");
-          const url = getBadgeURL(name, version);
-          if (url) {
-            const img = document.createElement("img");
-            img.src = url;
-            img.alt = name;
-            badgesContainer.appendChild(img);
-          }
-        });
+        // Ajout badges si présents
+        if (extra && extra.badgesRaw && Array.isArray(extra.badgesRaw)) {
+          extra.badgesRaw.forEach(b => {
+            const [name, version] = b.split("/");
+            const url = getBadgeURL(name, version);
+            if (url) {
+              const img = document.createElement("img");
+              img.src = url;
+              img.alt = name;
+              badgesContainer.appendChild(img);
+            }
+          });
+        }
+
+        const username = document.createElement("span");
+        username.className = "username";
+        username.textContent = user;
+        username.style.color = extra?.userColor || "#a970ff";
+
+        userLine.appendChild(badgesContainer);
+        userLine.appendChild(username);
+
+        const message = document.createElement("div");
+        message.className = "message";
+        message.textContent = text;
+
+        msg.appendChild(userLine);
+        msg.appendChild(message);
+        chat.appendChild(msg);
+
+        side = side === "left" ? "right" : "left";
+        setTimeout(() => msg.remove(), 45000);
+      } catch (err) {
+        console.error("Erreur d'affichage du message :", err);
       }
-
-      // Pseudo coloré
-      const username = document.createElement("span");
-      username.className = "username";
-      username.textContent = user;
-      username.style.color = extra?.userColor || "#a970ff";
-
-      userLine.appendChild(badgesContainer);
-      userLine.appendChild(username);
-
-      const message = document.createElement("div");
-      message.className = "message";
-      message.textContent = text;
-
-      msg.appendChild(userLine);
-      msg.appendChild(message);
-      chat.appendChild(msg);
-
-      side = side === "left" ? "right" : "left";
-      setTimeout(() => msg.remove(), 45000);
     }
 
     // 🟣 Connexion à ton chat Twitch
     ComfyJS.Init("sat_anubis");
 
-    // Quand un message est reçu
     ComfyJS.onChat = (user, message, flags, self, extra) => {
       addMessage(user, message, extra);
     };
 
-    console.log("🎈 Chat Twitch Bulles connecté !");
+    // Petit test local (si tu veux vérifier dans le navigateur)
+    // addMessage("TestUser", "Ceci est un message de test", { userColor: "#ff5555" });
+
+    console.log("🎈 Chat Twitch Bulles prêt !");
   </script>
 </body>
 </html>
