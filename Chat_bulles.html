@@ -2,12 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Chat Twitch Bulles Transparent + Badges</title>
+<title>Chat Twitch Bulles avec Background</title>
 <style>
   html, body {
     margin: 0;
     padding: 0;
-    background: transparent;
+    background: transparent; /* transparent pour l'overlay */
     overflow: hidden;
     height: 100vh;
     width: 100vw;
@@ -25,7 +25,7 @@
   .bubble {
     position: absolute;
     bottom: 0;
-    background: rgba(40, 40, 40, 0.8); /* Fond gris translucide */
+    background: rgba(40, 40, 40, 0.8); /* fond gris translucide visible */
     color: white;
     padding: 10px 15px;
     border-radius: 25px;
@@ -33,12 +33,11 @@
     white-space: normal;
     word-wrap: break-word;
     max-width: 550px;
-    overflow: hidden;
+    overflow: visible; /* important pour que le fond soit visible */
     animation: floatUp 45s linear forwards;
     display: flex;
     flex-direction: column;
     gap: 5px;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3); /* glow autour du texte */
   }
 
   .user-line {
