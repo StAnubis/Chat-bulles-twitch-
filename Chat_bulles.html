@@ -29,12 +29,34 @@
     color: white;
     padding: 10px 15px;
     border-radius: 20px;
-    font-size: 20px;
-    white-space: normal;           /* ✅ permet les retours à la ligne */
-    word-wrap: break-word;         /* ✅ coupe les mots trop longs */
-    max-width: 500px;              /* largeur maximale de la bulle */
+    font-size: 18px;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 550px;
     overflow: hidden;
     animation: floatUp 45s linear forwards;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .user-line {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .username {
+    font-weight: bold;
+  }
+
+  .badges img {
+    height: 20px;
+    vertical-align: middle;
+  }
+
+  .message {
+    color: #f2f2f2;
   }
 
   .left { left: 10px; }
@@ -52,35 +74,4 @@
   <div id="chat"></div>
 
   <!-- 📡 Import de ComfyJS -->
-  <script src="https://cdn.jsdelivr.net/npm/comfy.js/dist/comfy.min.js"></script>
-
-  <script>
-    const chat = document.getElementById("chat");
-    let side = "left";
-
-    // Fonction pour ajouter une bulle
-    function addMessage(user, text) {
-      const msg = document.createElement("div");
-      msg.className = `bubble ${side}`;
-      msg.textContent = `${user}: ${text}`;
-      chat.appendChild(msg);
-
-      // alterner gauche/droite
-      side = side === "left" ? "right" : "left";
-
-      // suppression après 45s (durée animation)
-      setTimeout(() => msg.remove(), 45000);
-    }
-
-    // 🟣 Connexion à ton chat Twitch
-    ComfyJS.Init("sat_anubis");
-
-    // Quand un message est reçu
-    ComfyJS.onChat = (user, message, flags, self, extra) => {
-      addMessage(user, message);
-    };
-
-    console.log("🎈 Chat Twitch Bulles connecté !");
-  </script>
-</body>
-</html>
+  <script src="https://cdn.jsdelivr.net/npm/c
