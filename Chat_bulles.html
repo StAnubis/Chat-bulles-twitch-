@@ -30,10 +30,10 @@
     padding: 10px 15px;
     border-radius: 20px;
     font-size: 20px;
-    white-space: nowrap;
-    max-width: 500px;
+    white-space: normal;           /* ✅ permet les retours à la ligne */
+    word-wrap: break-word;         /* ✅ coupe les mots trop longs */
+    max-width: 500px;              /* largeur maximale de la bulle */
     overflow: hidden;
-    text-overflow: ellipsis;
     animation: floatUp 45s linear forwards;
   }
 
@@ -73,7 +73,6 @@
     }
 
     // 🟣 Connexion à ton chat Twitch
-    // Remplace "ton_pseudo_twitch" par ton pseudo Twitch (sans @)
     ComfyJS.Init("sat_anubis");
 
     // Quand un message est reçu
@@ -81,10 +80,7 @@
       addMessage(user, message);
     };
 
-    // (Facultatif) message de debug pour vérifier la connexion
     console.log("🎈 Chat Twitch Bulles connecté !");
   </script>
 </body>
 </html>
-
-
