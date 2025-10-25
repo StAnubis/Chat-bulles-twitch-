@@ -73,7 +73,6 @@
 <body>
   <div id="chat"></div>
 
-  <!-- 📡 Import de ComfyJS -->
   <script src="https://cdn.jsdelivr.net/npm/comfy.js/dist/comfy.min.js"></script>
 
   <script>
@@ -84,33 +83,24 @@
       const msg = document.createElement("div");
       msg.className = `bubble ${side}`;
 
-      // ---- Ligne du haut : badges + pseudo coloré ----
+      // --- Ligne du haut : badges + pseudo ---
       const userLine = document.createElement("div");
       userLine.className = "user-line";
 
       const badgesContainer = document.createElement("span");
       badgesContainer.className = "badges";
 
-      // Afficher les badges s’ils existent
+      // ✅ Récupération des badges à partir de extra.userBadges
       if (extra && extra.userBadges) {
-        for (const badge in extra.userBadges) {
-          const badgeInfo = extra.userBadges[badge];
-          // Charger les images Twitch officielles
-          const badgeImg = document.createElement("img");
-          badgeImg.src = `https://static-cdn.jtvnw.net/badges/v1/${badgeInfo.version}/${badgeInfo.image_url ? badgeInfo.image_url : "1"}/1`;
+        for (const [badgeName, badgeData] of Object.entries(extra.userBadges)) {
+          const img = document.createElement("img");
+          img.src = `https://static-cdn.jtvnw.net/badges/v1/${badgeData.setID}/${badgeData.version}/1`;
+          img.alt = badgeName;
+          badgesContainer.appendChild(img);
         }
       }
 
-      // ✅ Correction : récupération directe des URLs badges
-      if (extra && extra.badges) {
-        extra.badges.forEach(badge => {
-          const img = document.createElement("img");
-          img.src = badge.image_url_1x;
-          img.alt = badge.title;
-          badgesContainer.appendChild(img);
-        });
-      }
-
+      // --- Pseudo coloré ---
       const username = document.createElement("span");
       username.className = "username";
       username.textContent = user;
@@ -119,7 +109,7 @@
       userLine.appendChild(badgesContainer);
       userLine.appendChild(username);
 
-      // ---- Ligne du bas : message ----
+      // --- Message ---
       const message = document.createElement("div");
       message.className = "message";
       message.textContent = text;
@@ -131,19 +121,15 @@
       // alterner gauche/droite
       side = side === "left" ? "right" : "left";
 
-      // suppression après 45s (durée animation)
+      // suppression après 45s
       setTimeout(() => msg.remove(), 45000);
     }
 
     // 🟣 Connexion à ton chat Twitch
     ComfyJS.Init("sat_anubis");
 
-    // Quand un message est reçu
     ComfyJS.onChat = (user, message, flags, self, extra) => {
       addMessage(user, message, extra);
     };
 
-    console.log("🎈 Chat Twitch Bulles connecté !");
-  </script>
-</body>
-</html>
+    console.log("🎈 Chat
